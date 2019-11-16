@@ -1,0 +1,24 @@
+INSTALL for ncar_pid
+
+Daniel Michelson
+Environment and Climate Change Canada
+
+ncar_pid works with Python 2.6.x and higher, also 3.5 and higher, together with
+a RAVE installation.
+RAVE and its packages is found at git.baltrad.eu.
+
+You must set the RAVEROOT environment variable. This is the path to the root
+of your RAVE installation, e.g. /opt/baltrad . The Makefiles are already 
+configured appropriately, and will use the information you used when building 
+RAVE. This applies to the full path to your env in a conda build as well.
+
+Build everything at once with a simple 'make', or if you only want the C 
+functionality, go to the 'src' directory and issue 'make' there.
+
+Run unit tests with 'make test'. These unit tests require the full build, ie.
+that 'make' has been issued at the top level.
+
+Install the built add-on with 'make install'. This will add the command-line 
+binary and compiled Python module to your RAVE installation.
+
+Generate the in-line documentation with doxygen, by issuing 'make doc'.
