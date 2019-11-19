@@ -39,6 +39,14 @@ extern "C" {
 #define PID_NODATA 255.0
 #define PID_UNDETECT 0.0
 
+
+/**
+ * Read thresholds from file used to perform particle identification.
+ * @param[in] thresholds_file - string to thresholds file.
+ * @returns 0 upon success, otherwise -1 (failure), same as NCAR code
+ */
+int readThresholdsFromFile(const char *thresholds_file);
+
 /**
  * For an input polar scan (or possibly RHI), perform particle classification
  * using the NCAR implementation of the NEXRAD classes.

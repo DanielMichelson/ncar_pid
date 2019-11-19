@@ -61,7 +61,27 @@ static PyObject *ErrorObject;
 
 
 /**
- * Derives a parameter containing depolarization ratio
+ * Reads look-up file containing thresholds for particle identification
+ * @param[in] 
+ * @return 
+ */
+static PyObject* _readThresholdsFromFile_func(PyObject* self, PyObject* args) {
+  const char *thresholds_file;
+
+  if (!PyArg_ParseTuple(args, "s", &thresholds_file)) {
+    return NULL;
+  }
+
+  if (readThresholdsFromFile(thresholds_file)) {
+    raiseException_returnNULL(PyExc_AttributeError, "Something went wrong");
+  }
+
+  Py_RETURN_NONE;
+}
+
+
+/**
+ * Derives particle identification from a scan of polarimetric moments
  * @param[in] 
  * @return 
  */
@@ -90,7 +110,8 @@ static PyObject* _generateNcar_pid_func(PyObject* self, PyObject* args) {
 
 static struct PyMethodDef _ncar_pid_functions[] =
 {
-  { "generateNcar_pid", (PyCFunction) _generateNcar_pid_func, METH_VARARGS },
+  {"readThresholdsFromFile", (PyCFunction) _readThresholdsFromFile_func, METH_VARARGS },
+  {"generateNcar_pid", (PyCFunction) _generateNcar_pid_func, METH_VARARGS },
   { NULL, NULL }
 };
 

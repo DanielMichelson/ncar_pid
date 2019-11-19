@@ -32,6 +32,7 @@ from numpy import *
 
 
 class ncar_pidTest(unittest.TestCase):
+    THRESHOLDS = '../../config/pid_thresholds.nexrad'
     FIXTURE = '../.h5'
     REFERENCE_FIXTURE = '../.h5'
 
@@ -44,6 +45,9 @@ class ncar_pidTest(unittest.TestCase):
     def test_something(self):
         pass
 #        self.assertAlmostEqual(result, reference, 2)
+
+    def test_readThresholds(self):
+        _ncar_pid.readThresholdsFromFile(self.THRESHOLDS)
 
 
 # Helper function to determine whether two parameter arrays differ

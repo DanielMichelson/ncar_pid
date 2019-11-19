@@ -128,6 +128,19 @@ int createSNR(PolarScan_t *scan) {
 /* End internal working functions */
 /* Begin interface */
 
+int readThresholdsFromFile(const char *thresholds_file) {
+  int ret = 1;  /* Neither 0 (success) nor -1 (failure) */
+  NcarParticleId       pid; 
+  pid.setDebug(true);
+  pid.setVerbose(true);
+  pid.setMissingDouble(missing);
+
+  ret = pid.readThresholdsFromFile(thresholds_file);
+
+  return ret;
+}
+
+
 int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   int nrays, nbins, ray, bin;
   PolarScanParam_t *CLASS = NULL;
