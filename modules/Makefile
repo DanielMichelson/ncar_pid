@@ -24,7 +24,7 @@
 ###########################################################################
 -include $(RAVEROOT)/rave/mkf/def.mk
 
-CFLAGS= $(CCSHARED) $(OPTS) $(DEFS) $(RAVE_INCLUDE_FLAG) \
+CFLAGS= $(CCSHARED) -std=c++11 $(OPTS) $(DEFS) $(RAVE_INCLUDE_FLAG) \
 	$(RAVE_INCLUDE_FLAG)/python \
 	-I. -I../src $(INCLUDE_PYTHON) \
 	-I$(HLHDF_INCLUDE_DIR) $(NUMPY_INCLUDE_DIR) \
@@ -52,7 +52,7 @@ CFLAGS+= -DPTHREAD_SUPPORTED
 PTHREAD_LIBRARY=-lpthread
 endif
 
-LIBRARIES= -lncar_pid $(RAVE_MODULE_LIBRARIES)
+LIBRARIES= -lncar_pid $(RAVE_MODULE_LIBRARIES) -lstdc++
 
 # --------------------------------------------------------------------
 # Fixed definitions
@@ -63,7 +63,7 @@ TARGET= _ncar_pid.so
 
 INSTALL_HEADERS= 
 
-MAKECDEPEND=$(CC) -MM $(CFLAGS) -MT '$(@D)/$(@F)' -o $(DF).d $<
+MAKECDEPEND=g++ -MM $(CFLAGS) -MT '$(@D)/$(@F)' -o $(DF).d $<
 
 DEPDIR=.dep
 DF=$(DEPDIR)/$(*F)
@@ -112,7 +112,7 @@ distclean:	clean
 	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 		-e '/^$$/ d' -e 's/$$/ :/' < $(DF).d >> $(DF).P; \
 	\rm -f $(DF).d
-	$(CC) -c $(CFLAGS) $< -o $@
+	g++ -c $(CFLAGS) $< -o $@
 
 # NOTE! This ensures that the dependencies are setup at the right time so this should not be moved
 -include $(SOURCE:%.c=$(DEPDIR)/%.P)

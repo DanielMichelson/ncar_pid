@@ -41,7 +41,7 @@ static double missing = -9999.0;
  * @returns polar scan parameter object upon success, otherwise NULL
  */
 PolarScanParam_t* emptyRay(const char* paramname, int nbins) {
-  PolarScanParam_t *RAY = RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
+  PolarScanParam_t *RAY = (PolarScanParam_t*)RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
   PolarScanParam_setGain(RAY, PID_GAIN);
   PolarScanParam_setOffset(RAY, PID_OFFSET);
   PolarScanParam_setNodata(RAY, (double)missing);
@@ -92,7 +92,7 @@ int createSNR(PolarScan_t *scan) {
      form and therefore not scaled according to what this code expects. */
   int nrays = (int)PolarScan_getNrays(scan);
   int nbins = (int)PolarScan_getNbins(scan);
-  PolarScanParam_t *SNRH = RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
+  PolarScanParam_t *SNRH = (PolarScanParam_t*)RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
   PolarScanParam_setGain(SNRH, PID_GAIN);
   PolarScanParam_setOffset(SNRH, PID_OFFSET);
   PolarScanParam_setNodata(SNRH, (double)missing);
@@ -166,7 +166,7 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   }
 
   /* Create a new parameter to store PID results. Will be added to scan later */
-  CLASS = RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
+  CLASS = (PolarScanParam_t*)RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
   PolarScanParam_setGain(CLASS, PID_GAIN);
   PolarScanParam_setOffset(CLASS, PID_OFFSET);
   PolarScanParam_setNodata(CLASS, PID_NODATA);
