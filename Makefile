@@ -50,8 +50,8 @@ install:
 clean:
 	$(MAKE) -C src clean
 	$(MAKE) -C modules clean
-	$(MAKE) -C Lib clean
-	$(MAKE) -C bin clean
+#	$(MAKE) -C Lib clean
+#	$(MAKE) -C bin clean
 	$(MAKE) -C doxygen clean
 
 .PHONY=distclean		 
