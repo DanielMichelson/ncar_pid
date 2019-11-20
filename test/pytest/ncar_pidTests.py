@@ -27,8 +27,8 @@ import os, unittest
 import _rave
 import _raveio
 import _ncar_pid
-#import ncar_pid
-from numpy import *
+import ncar_pid
+import numpy as np
 
 
 class ncar_pidTest(unittest.TestCase):
@@ -46,16 +46,23 @@ class ncar_pidTest(unittest.TestCase):
         pass
 #        self.assertAlmostEqual(result, reference, 2)
 
+    def test_interpolateProfile(self):
+        reference = np.array([15.,  17.5,  5.,  -2.5, -7.5])
+        height = np.array([0.0, 100.0, 200.0, 300.0])
+        tempc = np.array([20.0, 10.0, 0.0, -10.0])
+        myheight = np.array([50.0, 25.0, 150.0, 225.0, 275.0])
+        out = ncar_pid.interpolateProfile(height, tempc, myheight)
+        self.assertEqual(out.all(), reference.all())
+
     def test_readThresholds(self):
         _ncar_pid.readThresholdsFromFile(self.THRESHOLDS)
-
 
 # Helper function to determine whether two parameter arrays differ
 def different(scan1, scan2, param="CLASS"):
     a = scan1.getParameter(param).getData()
     b = scan2.getParameter(param).getData()
     c = a == b
-    d = sum(where(equal(c, False), 1, 0).flat)
+    d = np.sum(np.where(np.equal(c, False), 1, 0).flat)
     if d > 0:
         return True
     else:
