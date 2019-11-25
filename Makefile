@@ -17,7 +17,7 @@
 # along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------
 # 
-# ncar_pid Makefile
+# ncarb Makefile
 # @file
 # @author Daniel Michelson, Environment Canada and Climate Change Canada
 # @date 2019-11-14
@@ -33,8 +33,8 @@ modules:
 	$(MAKE) -C modules
 
 test:
-	@chmod +x ./tools/test_ncar_pid.sh
-	@./tools/test_ncar_pid.sh
+	@chmod +x ./tools/test_ncarb.sh
+	@./tools/test_ncarb.sh
 
 doc:
 	$(MAKE) -C doxygen doc

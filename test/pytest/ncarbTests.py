@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------*/
 
-ncar_pid unit tests
+ncarb unit tests
 
 @file
 @author Daniel Michelson, Environment and Climate Change Cananda
@@ -26,12 +26,12 @@ ncar_pid unit tests
 import os, unittest
 import _rave
 import _raveio
-import _ncar_pid
-import ncar_pid
+import _ncarb
+import ncarb
 import numpy as np
 
 
-class ncar_pidTest(unittest.TestCase):
+class ncarbTest(unittest.TestCase):
     THRESHOLDS = '../../config/pid_thresholds.nexrad'
     FIXTURE = '../.h5'
     REFERENCE_FIXTURE = '../.h5'
@@ -51,11 +51,11 @@ class ncar_pidTest(unittest.TestCase):
         height = np.array([0.0, 100.0, 200.0, 300.0])
         tempc = np.array([20.0, 10.0, 0.0, -10.0])
         myheight = np.array([50.0, 25.0, 150.0, 225.0, 275.0])
-        out = ncar_pid.interpolateProfile(height, tempc, myheight)
+        out = ncarb.interpolateProfile(height, tempc, myheight)
         self.assertEqual(out.all(), reference.all())
 
     def test_readThresholds(self):
-        _ncar_pid.readThresholdsFromFile(self.THRESHOLDS)
+        _ncarb.readThresholdsFromFile(self.THRESHOLDS)
 
 # Helper function to determine whether two parameter arrays differ
 def different(scan1, scan2, param="CLASS"):

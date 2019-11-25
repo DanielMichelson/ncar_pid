@@ -18,13 +18,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------*/
 
-Native Python functionality using interfaced NCAR particle identification.
+Native Python functionality using interfaced NCAR particle identification and 
+KDP derivation.
 
 @file
 @author Daniel Michelson, Environment and Climate Change Cananda
 @date 2019-11-19
 '''
-import _ncar_pid
+import _ncarb
 import numpy as np
 
 

@@ -16,10 +16,10 @@ SCRIPTPATH=`dirname "$SCRFILE"`
 RES=255
 
 if [ $# -gt 0 -a "$1" = "alltest" ]; then
-  "$SCRIPTPATH/run_python_script.sh" "${SCRIPTPATH}/../test/pytest/NCAR_PIDFullTestSuite.py" "${SCRIPTPATH}/../test/pytest"
+  "$SCRIPTPATH/run_python_script.sh" "${SCRIPTPATH}/../test/pytest/NCARBFullTestSuite.py" "${SCRIPTPATH}/../test/pytest"
   RES=$?
 else
-  "$SCRIPTPATH/run_python_script.sh" "${SCRIPTPATH}/../test/pytest/NCAR_PIDTestSuite.py" "${SCRIPTPATH}/../test/pytest"
+  "$SCRIPTPATH/run_python_script.sh" "${SCRIPTPATH}/../test/pytest/NCARBTestSuite.py" "${SCRIPTPATH}/../test/pytest"
   RES=$?
 fi
 

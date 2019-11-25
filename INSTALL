@@ -1,9 +1,9 @@
-INSTALL for ncar_pid
+INSTALL for ncarb
 
 Daniel Michelson
 Environment and Climate Change Canada
 
-ncar_pid works with Python 2.6.x and higher, also 3.5 and higher, together with
+ncarb works with Python 2.6.x and higher, also 3.5 and higher, together with
 a RAVE installation.
 RAVE and its packages is found at git.baltrad.eu.
 

@@ -28,6 +28,18 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 #include "ncar_pid.h"
 static double missing = -9999.0;
 
+/* Global declaration of our PID object. For continuous re-use.
+   Needs to be released at exit. */
+NcarParticleId       pid; 
+KdpFilt kdp;
+/* Other stuff that's here for completeness even if not used */
+  //pid.setDebug(true);
+  //pid.setVerbose(false);
+  //pid.setWavelengthCm(vol.wavelength()); // not actually used by underlying class
+  //pid.setSnrThresholdDb(-5000.0);
+  //pid.setSnrUpperThresholdDb(5000.0);
+  //pid.setReplaceMissingLdr();
+
 
 /* Begin internal working functions */
 
@@ -130,13 +142,15 @@ int createSNR(PolarScan_t *scan) {
 
 int readThresholdsFromFile(const char *thresholds_file) {
   int ret = 1;  /* Neither 0 (success) nor -1 (failure) */
-  NcarParticleId       pid; 
-  pid.setDebug(true);
-  pid.setVerbose(true);
+  //  NcarParticleId       pid; 
+  //  pid.setDebug(true);
+  //  pid.setVerbose(true);
   pid.setMissingDouble(missing);
 
   ret = pid.readThresholdsFromFile(thresholds_file);
 
+  //  pid.setDebug(false);
+  //  pid.setVerbose(false);
   return ret;
 }
 
@@ -152,16 +166,8 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   PolarScanParam_t *rhohv_ray = NULL;
   PolarScanParam_t *phidp_ray = NULL;
   PolarScanParam_t *tempc_ray = NULL;
-  NcarParticleId       pid; 
-  //pid.setDebug(true);
-  //pid.setVerbose(false);
   pid.setMissingDouble(missing);
-  //pid.setWavelengthCm(vol.wavelength()); // not actually used by underlying class
-  //pid.setSnrThresholdDb(-5000.0);
-  //pid.setSnrUpperThresholdDb(5000.0);
-  //pid.setReplaceMissingLdr();
   pid.setMinValidInterest(-10.0);  /* Is this reflectivity? */
-
   pid.readThresholdsFromFile(thresholds_file);
 
   nrays = (int)PolarScan_getNrays(scan);
@@ -199,7 +205,7 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
     rhohv_ray = getConvertedRay(scan, "RHOHV", ray);
     phidp_ray = getConvertedRay(scan, "PHIDP", ray);
     if (!ldr_ray) ldr_ray = getConvertedRay(scan, "LDR", ray);
-    
+ 
     pid.computePidBeam(nbins,
 		       (const double *)PolarScanParam_getData(snr_ray),
 		       (const double *)PolarScanParam_getData(dbz_ray),

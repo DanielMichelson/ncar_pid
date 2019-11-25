@@ -17,7 +17,7 @@
 # along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------
 # 
-# ncar_pid/modukles/Makefile
+# ncarb/modules/Makefile
 # @file
 # @author Daniel Michelson, Environment and Climate Change Canada
 # @date 2019-11-16
@@ -52,14 +52,14 @@ CFLAGS+= -DPTHREAD_SUPPORTED
 PTHREAD_LIBRARY=-lpthread
 endif
 
-LIBRARIES= -lncar_pid $(RAVE_MODULE_LIBRARIES) -lstdc++
+LIBRARIES= -lncarb $(RAVE_MODULE_LIBRARIES) -lstdc++
 
 # --------------------------------------------------------------------
 # Fixed definitions
 
-SOURCE= pyncar_pid.c
+SOURCE= pyncarb.c
 OBJECT= $(SOURCE:.c=.o)
-TARGET= _ncar_pid.so
+TARGET= _ncarb.so
 
 INSTALL_HEADERS= 
 

@@ -17,12 +17,12 @@ You should have received a copy of the GNU Lesser General Public License
 along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------*/
 /**
- * Python wrapper to ncar_pid
+ * Python wrapper to ncarb
  * @file
  * @author Daniel Michelson, Environment and Climate Change Canada
  * @date 2019-11-16
  */
-#include "pyncar_pid_compat.h"
+#include "pyncarb_compat.h"
 #include "arrayobject.h"
 #include "rave.h"
 #include "rave_debug.h"
@@ -35,7 +35,7 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Debug this module
  */
-PYRAVE_DEBUG_MODULE("_ncar_pid");
+PYRAVE_DEBUG_MODULE("_ncarb");
 
 /**
  * Sets a Python exception.
@@ -81,7 +81,7 @@ static PyObject* _readThresholdsFromFile_func(PyObject* self, PyObject* args) {
 
 
 /**
- * Derives particle identification from a scan of polarimetric moments
+ * Derives particle identification (PID) from a scan of polarimetric moments
  * @param[in] 
  * @return 
  */
@@ -108,7 +108,7 @@ static PyObject* _generateNcar_pid_func(PyObject* self, PyObject* args) {
 }
 
 
-static struct PyMethodDef _ncar_pid_functions[] =
+static struct PyMethodDef _ncarb_functions[] =
 {
   {"readThresholdsFromFile", (PyCFunction) _readThresholdsFromFile_func, METH_VARARGS },
   {"generateNcar_pid", (PyCFunction) _generateNcar_pid_func, METH_VARARGS },
@@ -116,14 +116,14 @@ static struct PyMethodDef _ncar_pid_functions[] =
 };
 
 /**
- * Initialize the _ncar_pid module
+ * Initialize the _ncarb module
  */
-MOD_INIT(_ncar_pid)
+MOD_INIT(_ncarb)
 {
   PyObject* module = NULL;
   PyObject* dictionary = NULL;
   
-  MOD_INIT_DEF(module, "_ncar_pid", NULL/*doc*/, _ncar_pid_functions);
+  MOD_INIT_DEF(module, "_ncarb", NULL/*doc*/, _ncarb_functions);
   if (module == NULL) {
     return MOD_INIT_ERROR;
   }

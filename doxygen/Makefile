@@ -17,7 +17,7 @@
 # along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------
 # 
-# ncar_pid Makefile for generating documentation
+# ncarb Makefile for generating documentation
 # @file
 # @author Daniel Michelson, Environment and Climate Change Canada
 # @date 2019-11-16

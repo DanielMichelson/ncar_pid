@@ -28,13 +28,13 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 # @date 2019-06-04
 
 import _raveio
-import _ncar_pid
+import _ncarb
 
 
 
 if __name__=="__main__":
     rio = _raveio.open('fixture.h5')
     scan = rio.object
-    _ncar_pid.something()
+    _ncarb.something()
     rio.object = scan
     rio.save('reference.h5')

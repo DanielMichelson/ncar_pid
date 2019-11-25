@@ -17,14 +17,14 @@
 # along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------
 # 
-# ncar_pid/src/Makefile
+# ncarb/src/Makefile
 # @file
 # @author Daniel Michelson, Environment and Climate Change Canada
 # @date 2019-11-15
 ###########################################################################
 -include $(RAVEROOT)/rave/mkf/def.mk
 
-NCAR_PIDINC= -I. $(NUMPY_INCLUDE_DIR) $(INCLUDE_PYTHON) \
+NCARBINC= -I. $(NUMPY_INCLUDE_DIR) $(INCLUDE_PYTHON) \
 		-I$(HLHDF_INCLUDE_DIR) $(ZLIB_INCDIR) $(HDF5_INCDIR) \
 		$(PROJ_INCLUDE_DIR) $(RAVE_INCLUDE_FLAG)
 
@@ -32,28 +32,28 @@ LDFLAGS+= -L. -L$(HLHDF_LIB_DIR) $(ZLIB_LIBDIR) $(HDF5_LIBDIR) $(PROJ_LIB_DIR) \
 		$(RAVE_LIB_FLAG)
 
 ifeq ($(EXPAT_SUPPRESSED), no)
-NCAR_PIDINC+= $(EXPAT_INCLUDE_DIR)
+NCARBINC+= $(EXPAT_INCLUDE_DIR)
 LDFLAGS+= $(EXPAT_LIB_DIR)
 endif
 
 ifeq ($(BUFR_SUPPRESSED), no)
-NCAR_PIDINC+= $(BUFR_INCLUDE_DIR)
+NCARBINC+= $(BUFR_INCLUDE_DIR)
 LDFLAGS+= $(BUFR_LIB_DIR)
 endif
 
-CFLAGS=	$(OPTS) $(CCSHARED) $(DEFS) $(CREATE_ITRUNC) $(NCAR_PIDINC)
+CFLAGS=	$(OPTS) $(CCSHARED) $(DEFS) $(CREATE_ITRUNC) $(NCARBINC)
 
 # --------------------------------------------------------------------
 # Fixed definitions
 
-NCAR_PIDSOURCES= BeamHeight.cc FilterUtils.cc NcarParticleId.cc PidImapManager.cc PidInterestMap.cc TaStr.cc TempProfile.cc KdpFilt.cc ncar_pid.cc
+NCARBSOURCES= BeamHeight.cc FilterUtils.cc NcarParticleId.cc PidImapManager.cc PidInterestMap.cc TaStr.cc TempProfile.cc KdpFilt.cc ncar_pid.cc
 INSTALL_HEADERS= BeamHeight.hh FilterUtils.hh NcarParticleId.hh PidImapManager.hh PidInterestMap.hh TaStr.hh TempProfile.hh KdpFilt.hh ncar_pid.h
-NCAR_PIDOBJS= $(NCAR_PIDSOURCES:.cc=.o)
-LIBNCAR_PID= libncar_pid.so
-NCAR_PIDMAIN= 
-NCAR_PIDBIN= ncar_pid
-NCAR_PIDBINDEB= ncar_pid_deb
-NCAR_PIDLIBS= -lncar_pid $(RAVE_MODULE_LIBRARIES)
+NCARBOBJS= $(NCARBSOURCES:.cc=.o)
+LIBNCARB= libncarb.so
+NCARBMAIN= 
+NCARBBIN= ncarb
+NCARBBINDEB= ncarb_deb
+NCARBLIBS= -lncarb $(RAVE_MODULE_LIBRARIES)
 
 MAKEDEPEND=gcc -MM $(CFLAGS) -o $(DF).d $<
 DEPDIR=.dep
@@ -77,34 +77,34 @@ $(DEPDIR):
 	+@[ -d $@ ] || mkdir -p $@
 
 .PHONY=all
-all:		$(LIBNCAR_PID) #bin
+all:		$(LIBNCARB) #bin
 
-$(LIBNCAR_PID): $(DEPDIR) $(NCAR_PIDOBJS) 
-	$(LDSHARED) -o $@ $(NCAR_PIDOBJS)
+$(LIBNCARB): $(DEPDIR) $(NCARBOBJS) 
+	$(LDSHARED) -o $@ $(NCARBOBJS)
 
 .PHONY=bin
 bin: 
-	$(CC) $(NCAR_PIDINC) $(LDFLAGS) -o $(NCAR_PIDBIN) $(NCAR_PIDOBJS) $(NCAR_PIDLIBS)
+	$(CC) $(NCARBINC) $(LDFLAGS) -o $(NCARBBIN) $(NCARBOBJS) $(NCARBLIBS)
 
 .PHONY=bin-debug
-bin-debug:		$(NCAR_PIDBINDEB)
+bin-debug:		$(NCARBBINDEB)
 
-$(NCAR_PIDBINDEB): $(NCAR_PIDSOURCES)
-	$(CC) $(CFLAGS) -c ncar_pid.c -o ncar_pid.o
-	$(CC) $(CFLAGS) $(NCAR_PIDINC) $(LDFLAGS) -o $(NCAR_PIDBINDEB) $(NCAR_PIDOBJS) $(NCAR_PIDLIBS)
+$(NCARBBINDEB): $(NCARBSOURCES)
+	$(CC) $(CFLAGS) -c ncarb.c -o ncarb.o
+	$(CC) $(CFLAGS) $(NCARBINC) $(LDFLAGS) -o $(NCARBBINDEB) $(NCARBOBJS) $(NCARBLIBS)
 
 .PHONY=install
 install:
-	@"$(HLHDF_INSTALL_BIN)" -f -o -C $(LIBNCAR_PID) "$(prefix)/lib/$(LIBNCAR_PID)"
+	@"$(HLHDF_INSTALL_BIN)" -f -o -C $(LIBNCARB) "$(prefix)/lib/$(LIBNCARB)"
 	@for i in $(INSTALL_HEADERS) ; \
 	do \
 		"$(HLHDF_INSTALL_BIN)" -f -o -m644 -C $$i "$(prefix)/include/$$i"; \
 	done
-#	"$(HLHDF_INSTALL_BIN)" -f -o -C $(NCAR_PIDBIN) "$(prefix)/bin/$(NCAR_PIDBIN)";
+#	"$(HLHDF_INSTALL_BIN)" -f -o -C $(NCARBBIN) "$(prefix)/bin/$(NCARBBIN)";
 
 .PHONY=clean
 clean:
-		@\rm -f *.o core *~ $(LIBNCAR_PID)
+		@\rm -f *.o core *~ $(LIBNCARB)
 #		@\rm -fr $(DEPDIR)
 
 .PHONY=distclean		 
@@ -112,4 +112,4 @@ distclean:	clean
 		@\rm -f *.so
 
 # NOTE! This ensures that the dependencies are setup at the right time so this should not be moved
--include $(NCAR_PIDSOURCES:%.cc=$(DEPDIR)/%.P)
+-include $(NCARBSOURCES:%.cc=$(DEPDIR)/%.P)

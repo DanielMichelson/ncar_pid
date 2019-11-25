@@ -33,6 +33,7 @@ extern "C" {
 #include "polarscanparam.h"
 }
 #include "NcarParticleId.hh"
+#include "KdpFilt.hh"
 
 #define PID_GAIN 1.0
 #define PID_OFFSET 0.0

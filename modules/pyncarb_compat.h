@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------*/
 /**
- * Python compability file for making it possible to compile ncar_pid for both Python >2.6 and Python3
+ * Python compability file for making it possible to compile NCAR code for both Python >2.6 and Python3
  * @file
  * @author Anders Henja (Swedish Meteorological and Hydrological Institute, SMHI)
  * @date 2010-03-30
@@ -31,8 +31,8 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Python.h"
 
-#ifndef PYNCAR_PIDCOMPAT_H
-#define PYNCAR_PIDCOMPAT_H
+#ifndef PYNCARBCOMPAT_H
+#define PYNCARBCOMPAT_H
 
 
 #ifndef PyInt_Check
@@ -57,9 +57,9 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 
 #endif
 
-#define PY_COMPARE_ATTRO_NAME_WITH_STRING(ptr, name) PyNCAR_PIDAPI_CompareWithASCIIString(ptr, name)
+#define PY_COMPARE_ATTRO_NAME_WITH_STRING(ptr, name) PyNCARBAPI_CompareWithASCIIString(ptr, name)
 
-#define PY_COMPARE_STRING_WITH_ATTRO_NAME(name, ptr) PyNCAR_PIDAPI_CompareWithASCIIString(ptr, name)
+#define PY_COMPARE_STRING_WITH_ATTRO_NAME(name, ptr) PyNCARBAPI_CompareWithASCIIString(ptr, name)
 
 #if PY_MAJOR_VERSION >= 3
 #define MOD_INIT_ERROR        NULL
@@ -123,7 +123,7 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
  * @param[in] name - the string to compare with
  * @return 0, -1 or 1
  */
-static int PyNCAR_PIDAPI_CompareWithASCIIString(PyObject* ptr, const char* name) {
+static int PyNCARBAPI_CompareWithASCIIString(PyObject* ptr, const char* name) {
   int result = -1;
   if (!PyString_Check(ptr)){
 #ifdef Py_USING_UNICODE
