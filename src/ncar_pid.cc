@@ -49,7 +49,7 @@ static double missing = -9999.0;
  * This object needs to be released following use.
  * @param[in] string - the parameter's quantity identifier
  * @param[in] int - number of bins in the ray
- * @returns polar scan parameter object upon success, otherwise NULL
+ * @returns double* array
  */
 double* emptyRay(int nbins) {
   double* RAY = (double*)RAVE_MALLOC(nbins * sizeof(double));
@@ -65,7 +65,7 @@ double* emptyRay(int nbins) {
  * @param[in] scan - input polar scan
  * @param[in] string - the parameter's quantity identifier
  * @param[in] int - the index of the ray to extract
- * @returns double* object upon success
+ * @returns double* array
  */
 double* getRay(PolarScan_t *scan, const char* paramname, int ray) {
   PolarScanParam_t *param = PolarScan_getParameter(scan, paramname);
@@ -108,7 +108,7 @@ int createSNR(PolarScan_t *scan) {
   RaveValueType vtype;
   double value;
   double rscale = PolarScan_getRscale(scan);
-  if (!rscale) rscale = RSCALE;
+  if (!rscale) rscale = RSCALE;  /* Failsafe in cases where rscale == 0.0 */
   double rscale_km = rscale * 0.001;
   double rstart = PolarScan_getRstart(scan);
 

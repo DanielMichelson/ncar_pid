@@ -52,7 +52,8 @@ int readThresholdsFromFile(const char *thresholds_file);
  * For an input polar scan (or possibly RHI), perform particle classification
  * using the NCAR implementation of the NEXRAD classes.
  * @param[in] scan - input polar scan
- * @param[in] thresholds_file - string to file containing classification thresholds. Should only be read once as long as the software is initialized.
+ * @param[in] thresholds_file - string to file containing classification thresholds. Should only be read once as long as the software is initialized. This
+ * argument is therefore a dummy and can be removed.
  * @returns 1 upon success, otherwise 0
  */
 int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file);
