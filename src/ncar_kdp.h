@@ -17,13 +17,13 @@ You should have received a copy of the GNU Lesser General Public License
 along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 ------------------------------------------------------------------------*/
 /**
- * Description: NCAR's Particle ID and associated functionality
- * @file ncar_pid.h
+ * Description: NCAR's KDP derivation and associated functionality
+ * @file ncar_kdp.h
  * @author Daniel Michelson, Environment and Climate Change Canada
- * @date 2019-11-15
+ * @date 2019-11-25
  */
-#ifndef NCAR_PID_H
-#define NCAR_PID_H
+#ifndef NCAR_KDP_H
+#define NCAR_KDP_H
 #include <math.h>
 
 extern "C" {
@@ -31,30 +31,15 @@ extern "C" {
 #include "rave_attribute.h"
 #include "polarscan.h"
 #include "polarscanparam.h"
-#include "rave_alloc.h"
 }
-#include "NcarParticleId.hh"
-
-#define PID_GAIN 1.0
-#define PID_OFFSET 0.0
-#define PID_NODATA 255.0
-#define PID_UNDETECT 0.0
-#define RSCALE 100.0  /* meters */
+#include "KdpFilt.hh"
 
 /**
- * Read thresholds from file used to perform particle identification.
- * @param[in] thresholds_file - string to thresholds file.
- * @returns 0 upon success, otherwise -1 (failure), same as NCAR code
- */
-int readThresholdsFromFile(const char *thresholds_file);
-
-/**
- * For an input polar scan (or possibly RHI), perform particle classification
- * using the NCAR implementation of the NEXRAD classes.
+ * For an input polar scan (or possibly RHI), derive KDP using NCAR's 
+ * algorithm and code. This approach has been developed for S band.
  * @param[in] scan - input polar scan
- * @param[in] thresholds_file - string to file containing classification thresholds. Should only be read once as long as the software is initialized.
  * @returns 1 upon success, otherwise 0
  */
-int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file);
+int kdpFilterCompute(PolarScan_t *scan);
   
 #endif

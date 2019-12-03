@@ -25,8 +25,22 @@ KDP derivation.
 @author Daniel Michelson, Environment and Climate Change Cananda
 @date 2019-11-19
 '''
+import os
+import rave_defines
 import _ncarb
 import numpy as np
+
+THRESHOLDS_FILE = 'pid_thresholds.nexrad'
+THRESHOLDS_PATH = os.path.join(rave_defines.RAVECONFIG, THRESHOLDS_FILE)
+initialized = 0
+
+def init(fstr = THRESHOLDS_PATH):
+  global initialized
+  if initialized: return
+
+  _ncarb.readThresholdsFromFile(fstr)
+
+  initialized = 1
 
 
 ## Interpolates a vertical temperature profile to central beam heights given by
@@ -48,5 +62,26 @@ def interpolateProfile(pheight, ptempc, rheight):
   return mytempc[rheight_idx]
 
 
+## Pulls out the heights of bins along the ray of a scan and derives a
+#  matching temperture profile
+#  @param array (2-D) containing profile heights[0] and temperatures[1] 
+#  @param sequence or array containing profile temperatures in Celcius
+#  @return array of temperatures matching the scan's ray
+def getTempcProfile(scan, profile):
+  heightf = scan.getHeightField()
+  heights = heightf.getData()[0]
+  rtempc = interpolateProfile(profile[0], profile[1], heights)
+#  return heights, rtempc  # For debugging
+  return rtempc
+
+
+def pidScan(scan, profile, thresholds_file):
+  if not initialized:
+    init()
+  rtempc = getTempcProfile(scan, profile)
+  scan.addAttribute('how/tempc', rtempc)
+  _ncarb.generateNcar_pid(scan, thresholds_file)
+
+
 if __name__ == '__main__':
-    pass
+  pass

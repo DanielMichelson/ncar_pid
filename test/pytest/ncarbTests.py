@@ -33,8 +33,10 @@ import numpy as np
 
 class ncarbTest(unittest.TestCase):
     THRESHOLDS = '../../config/pid_thresholds.nexrad'
-    FIXTURE = '../.h5'
-    REFERENCE_FIXTURE = '../.h5'
+    FIXTURE = '../CASBV_201907302000_0.4.h5'
+    REF_FIXTURE = '../CASBV_201907302000_0.4_ref.h5'
+    PROFILE = '../2019073000_CASBV.prof.txt'
+    REF_TEMPC = '../profile_0.4.npy'
 
     def setUp(self):
         pass
@@ -54,8 +56,38 @@ class ncarbTest(unittest.TestCase):
         out = ncarb.interpolateProfile(height, tempc, myheight)
         self.assertEqual(out.all(), reference.all())
 
-    def test_readThresholds(self):
-        _ncarb.readThresholdsFromFile(self.THRESHOLDS)
+    def test_interpolateRealProfile(self):
+        profile = readProfile(self.PROFILE)
+        reference = np.load(self.REF_TEMPC)
+        scan = _raveio.open(self.FIXTURE).object
+        rtempc = ncarb.getTempcProfile(scan, profile)
+        self.assertEqual(rtempc.all(), reference.all())
+
+    def test_generateNcar_pid(self):
+        rio = _raveio.open(self.FIXTURE)
+        scan = rio.object
+        profile = readProfile(self.PROFILE)
+        ncarb.pidScan(scan, profile, self.THRESHOLDS)
+        rio.object = scan
+        rio.save(self.REF_FIXTURE)
+
+
+# Helper function to read temperature profile
+def readProfile(fstr):
+    h, t = [], []
+    fd = open(fstr)
+    lines = fd.readlines()
+    fd.close()
+    for line in lines:
+        l = line.split()
+        h.append(eval(l[0]))
+        t.append(eval(l[1]))
+    h.reverse()
+    t.reverse()
+    h = np.array(h) * 1000
+    t = np.array(t)
+    return np.array((h, t))
+
 
 # Helper function to determine whether two parameter arrays differ
 def different(scan1, scan2, param="CLASS"):

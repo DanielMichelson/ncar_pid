@@ -19,7 +19,7 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * Interface to NCAR's Particle ID and S-band KDP derivation, coded by Mike 
  * Dixon. Many thanks to Mark Curtis of the Australian Bureau of Meteorology 
- * for assistance based on his experience doing the same for Rainfields!
+ * for assistance based on his experience integrating PID into Rainfields!
  * @file
  * @author Daniel Michelson, Environment and Climate Change Canada
  * @date 2019-11-15
@@ -30,8 +30,7 @@ static double missing = -9999.0;
 
 /* Global declaration of our PID object. For continuous re-use.
    Needs to be released at exit. */
-NcarParticleId       pid; 
-KdpFilt kdp;
+  NcarParticleId       pid; 
 /* Other stuff that's here for completeness even if not used */
   //pid.setDebug(true);
   //pid.setVerbose(false);
@@ -52,47 +51,41 @@ KdpFilt kdp;
  * @param[in] int - number of bins in the ray
  * @returns polar scan parameter object upon success, otherwise NULL
  */
-PolarScanParam_t* emptyRay(const char* paramname, int nbins) {
-  PolarScanParam_t *RAY = (PolarScanParam_t*)RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
-  PolarScanParam_setGain(RAY, PID_GAIN);
-  PolarScanParam_setOffset(RAY, PID_OFFSET);
-  PolarScanParam_setNodata(RAY, (double)missing);
-  PolarScanParam_setUndetect(RAY, (double)missing);
-  PolarScanParam_setQuantity(RAY, paramname);
-  PolarScanParam_createData(RAY, nbins, 1, RaveDataType_DOUBLE);
+double* emptyRay(int nbins) {
+  double* RAY = (double*)RAVE_MALLOC(nbins * sizeof(double));
+  for (int bin=0; bin<nbins; bin++) RAY[bin] = 0.0;
   return RAY;
 }
 
 
 /**
- * Extracts a ray of data for a given parameter and represents it as a
- * polar scan param with one dimension. The ray contains double representation
- * only, and it uses the "missing" value for both nodata and undetect.
- * This object needs to be released following use.
+ * Extracts a ray of data for a given parameter and represents it as an
+ * array. The ray contains double representation.
+ * only. This object needs to be released following use.
  * @param[in] scan - input polar scan
  * @param[in] string - the parameter's quantity identifier
  * @param[in] int - the index of the ray to extract
- * @returns polar scan parameter object upon success, otherwise NULL
+ * @returns double* object upon success
  */
-PolarScanParam_t* getConvertedRay(PolarScan_t *scan, const char* paramname, int ray) {
+double* getRay(PolarScan_t *scan, const char* paramname, int ray) {
   PolarScanParam_t *param = PolarScan_getParameter(scan, paramname);
   int nbins = (int)PolarScanParam_getNbins(param);
   int bin;
   RaveValueType vtype;
   double value;
-  
-  PolarScanParam_t *RAY = emptyRay(paramname, nbins);
+  double* RAY = (double*)RAVE_MALLOC(nbins * sizeof(double));
 
   for (bin = 0; bin < nbins; bin++) {
     vtype = PolarScanParam_getConvertedValue(param, bin, ray, &value);
     if (vtype == RaveValueType_DATA) {
-      PolarScanParam_setValue(RAY, bin, ray, value);
+      RAY[bin] = value;
     } else {
-      PolarScanParam_setValue(RAY, bin, ray, (double)missing);
+      RAY[bin] = (double)missing;
     }
   }
   RAVE_OBJECT_RELEASE(param);
   return RAY;
+  
 }
 
 
@@ -115,6 +108,7 @@ int createSNR(PolarScan_t *scan) {
   RaveValueType vtype;
   double value;
   double rscale = PolarScan_getRscale(scan);
+  if (!rscale) rscale = RSCALE;
   double rscale_km = rscale * 0.001;
   double rstart = PolarScan_getRstart(scan);
 
@@ -126,6 +120,7 @@ int createSNR(PolarScan_t *scan) {
       if (vtype == RaveValueType_DATA) {
 	double range = rstart + (bin * rscale_km);  /* New formulation */
 	double noiseDbz = noise_dbz_at_100km + 20.0 * (log10(range) - log10(100.0));
+	//	if (ray == 180) printf("SNR %lf ", value-noiseDbz);
 	PolarScanParam_setValue(SNRH, bin, ray, value-noiseDbz);
       } else {
 	PolarScanParam_setValue(SNRH, bin, ray, -20.0);
@@ -133,6 +128,8 @@ int createSNR(PolarScan_t *scan) {
     }
   }
   PolarScan_addParameter(scan, SNRH);
+  RAVE_OBJECT_RELEASE(DBZH);
+  RAVE_OBJECT_RELEASE(SNRH);
   return 1;
 }
 
@@ -158,31 +155,30 @@ int readThresholdsFromFile(const char *thresholds_file) {
 int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   int nrays, nbins, ray, bin;
   PolarScanParam_t *CLASS = NULL;
-  PolarScanParam_t *snr_ray = NULL;
-  PolarScanParam_t *dbz_ray = NULL;
-  PolarScanParam_t *zdr_ray = NULL;
-  PolarScanParam_t *kdp_ray = NULL;
-  PolarScanParam_t *ldr_ray = NULL;
-  PolarScanParam_t *rhohv_ray = NULL;
-  PolarScanParam_t *phidp_ray = NULL;
-  PolarScanParam_t *tempc_ray = NULL;
+  RaveAttribute_t *tempc_attr = NULL;
+  double *tempc = NULL;
+  double *ldr = NULL;
+  //  NcarParticleId       pid; 
+  //  pid.setDebug(true);
+  //  pid.setVerbose(true);
   pid.setMissingDouble(missing);
   pid.setMinValidInterest(-10.0);  /* Is this reflectivity? */
-  pid.readThresholdsFromFile(thresholds_file);
+  //  pid.readThresholdsFromFile(thresholds_file);
 
   nrays = (int)PolarScan_getNrays(scan);
   nbins = (int)PolarScan_getNbins(scan);
   
   if (!PolarScan_hasParameter(scan, "LDR")) {
-    ldr_ray = emptyRay("LDR", nbins);  /* Just recycle until the end */
+    ldr = emptyRay(nbins);  /* Just recycle until the end */
   }
 
-  /* Using temperature profile, interpolate temp for each bin along the ray */
-  tempc_ray = emptyRay("TEMPC", nbins);  /* Also recycle */
-  
   if (!PolarScan_hasParameter(scan, "SNRH")) {
     createSNR(scan);
   }
+
+  /* Get temperature data along the ray. Re-use for all rays of the sweep. */
+  tempc_attr = PolarScan_getAttribute(scan, "how/tempc");
+  RaveAttribute_getDoubleArray(tempc_attr, &tempc, &nbins);
 
   /* Create a new parameter to store PID results. Will be added to scan later */
   CLASS = (PolarScanParam_t*)RAVE_OBJECT_NEW(&PolarScanParam_TYPE);
@@ -192,40 +188,52 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   PolarScanParam_setUndetect(CLASS, PID_UNDETECT);
   PolarScanParam_setQuantity(CLASS, "CLASS");
   PolarScanParam_createData(CLASS, (long)nbins, (long)nrays, RaveDataType_UCHAR);
-    
+
   for (ray = 0; ray < nrays; ++ray) {
 
     /* Read out moments, convert to physical value, make sure they're doubles,
        for each moment set nodata and undetect to "missing".
        Assumes CfR2 short names, which are the same as ODIM_H5 quantity names.*/
-    snr_ray = getConvertedRay(scan, "SNRH", ray);
-    dbz_ray = getConvertedRay(scan, "DBZH", ray);
-    zdr_ray = getConvertedRay(scan, "ZDR", ray);
-    kdp_ray = getConvertedRay(scan, "KDP", ray);
-    rhohv_ray = getConvertedRay(scan, "RHOHV", ray);
-    phidp_ray = getConvertedRay(scan, "PHIDP", ray);
-    if (!ldr_ray) ldr_ray = getConvertedRay(scan, "LDR", ray);
- 
-    pid.computePidBeam(nbins,
-		       (const double *)PolarScanParam_getData(snr_ray),
-		       (const double *)PolarScanParam_getData(dbz_ray),
-		       (const double *)PolarScanParam_getData(zdr_ray),
-		       (const double *)PolarScanParam_getData(kdp_ray),
-		       (const double *)PolarScanParam_getData(ldr_ray),
-		       (const double *)PolarScanParam_getData(rhohv_ray),
-		       (const double *)PolarScanParam_getData(phidp_ray),
-		       (const double *)PolarScanParam_getData(tempc_ray));
+    double *snr = getRay(scan, "SNRH", ray);
+    double *dbz = getRay(scan, "DBZH", ray);
+    double *zdr = getRay(scan, "ZDR", ray);
+    double *kdp = getRay(scan, "KDP", ray);
+    double *rhohv = getRay(scan, "RHOHV", ray);
+    double *phidp = getRay(scan, "PHIDP", ray);
+    if (PolarScan_hasParameter(scan, "LDR")) {
+      ldr = getRay(scan, "LDR", ray);
+    }
 
-    RAVE_OBJECT_RELEASE(snr_ray);
-    RAVE_OBJECT_RELEASE(dbz_ray);
-    RAVE_OBJECT_RELEASE(zdr_ray);
-    RAVE_OBJECT_RELEASE(kdp_ray);
-    RAVE_OBJECT_RELEASE(rhohv_ray);
-    RAVE_OBJECT_RELEASE(phidp_ray);
+    pid.computePidBeam(nbins,
+		       (const double*)snr,
+		       (const double*)dbz,
+		       (const double*)zdr,
+		       (const double*)kdp,
+		       (const double*)ldr,
+		       (const double*)rhohv,
+		       (const double*)phidp,
+		       (const double*)tempc);
+    // if (ray == 180) {
+    //   for (bin = 0; bin < nbins; ++bin) {
+    // 	printf("%3.1lf\t%3.1lf\t%3.1lf\t%3.1lf\t%3.1lf\t%3.1lf\t%3.1lf\t%3.1lf\n",
+    // 	       snr[bin], dbz[bin], zdr[bin], kdp[bin], ldr[bin],
+    // 	       rhohv[bin], phidp[bin], tempc[bin]);
+    //   }
+    // }
+    RAVE_FREE(snr);
+    RAVE_FREE(dbz);
+    RAVE_FREE(zdr);
+    RAVE_FREE(kdp);
+    RAVE_FREE(rhohv);
+    RAVE_FREE(phidp);
+    if (PolarScan_hasParameter(scan, "LDR")) {
+      RAVE_FREE(ldr);
+    }
 
     /* copy the pid output into our field */
     for (bin = 0; bin < nbins; ++bin) {
       int val = pid.getPid()[bin];
+      //      if (ray == 180) printf("val %d ", val);
       /* If class==0 then undetect or nodata? For now, just paste what's there */
       PolarScanParam_setValue(CLASS, bin, ray, (double)val);
     }
@@ -242,11 +250,12 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   /*   const char *desc = description.c_str(); */
   /*   printf("%s\n", desc); */
   /* } */
+  /* RaveAttribute_setString(RaveAttribute_t* attr, const char* value); */
 
   /* Add PID results to scan. No need to add SNRH. */
   PolarScan_addParameter(scan, CLASS);
-  PolarScan_removeParameter(scan, "SNRH");
-  RAVE_OBJECT_RELEASE(ldr_ray);
-  RAVE_OBJECT_RELEASE(tempc_ray);
+  //  PolarScan_removeParameter(scan, "SNRH");
+  RAVE_OBJECT_RELEASE(CLASS);
+  RAVE_OBJECT_RELEASE(tempc_attr);
   return 1;
 }
