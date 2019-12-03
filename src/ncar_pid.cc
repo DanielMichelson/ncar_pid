@@ -168,13 +168,10 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   nrays = (int)PolarScan_getNrays(scan);
   nbins = (int)PolarScan_getNbins(scan);
   
-  if (!PolarScan_hasParameter(scan, "LDR")) {
-    ldr = emptyRay(nbins);  /* Just recycle until the end */
-  }
+  /* Just recycle empty LDR unless the moment actually exists */
+  if (!PolarScan_hasParameter(scan, "LDR")) ldr = emptyRay(nbins);
 
-  if (!PolarScan_hasParameter(scan, "SNRH")) {
-    createSNR(scan);
-  }
+  if (!PolarScan_hasParameter(scan, "SNRH")) createSNR(scan);
 
   /* Get temperature data along the ray. Re-use for all rays of the sweep. */
   tempc_attr = PolarScan_getAttribute(scan, "how/tempc");
@@ -192,7 +189,7 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   for (ray = 0; ray < nrays; ++ray) {
 
     /* Read out moments, convert to physical value, make sure they're doubles,
-       for each moment set nodata and undetect to "missing".
+       for each moment set both nodata and undetect to "missing".
        Assumes CfR2 short names, which are the same as ODIM_H5 quantity names.*/
     double *snr = getRay(scan, "SNRH", ray);
     double *dbz = getRay(scan, "DBZH", ray);
@@ -200,9 +197,7 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
     double *kdp = getRay(scan, "KDP", ray);
     double *rhohv = getRay(scan, "RHOHV", ray);
     double *phidp = getRay(scan, "PHIDP", ray);
-    if (PolarScan_hasParameter(scan, "LDR")) {
-      ldr = getRay(scan, "LDR", ray);
-    }
+    if (PolarScan_hasParameter(scan, "LDR")) ldr = getRay(scan, "LDR", ray);
 
     pid.computePidBeam(nbins,
 		       (const double*)snr,
@@ -226,9 +221,7 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
     RAVE_FREE(kdp);
     RAVE_FREE(rhohv);
     RAVE_FREE(phidp);
-    if (PolarScan_hasParameter(scan, "LDR")) {
-      RAVE_FREE(ldr);
-    }
+    if (PolarScan_hasParameter(scan, "LDR")) RAVE_FREE(ldr);
 
     /* copy the pid output into our field */
     for (bin = 0; bin < nbins; ++bin) {
