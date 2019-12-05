@@ -250,5 +250,6 @@ int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file) {
   //  PolarScan_removeParameter(scan, "SNRH");
   RAVE_OBJECT_RELEASE(CLASS);
   RAVE_OBJECT_RELEASE(tempc_attr);
+  RAVE_FREE(ldr);
   return 1;
 }

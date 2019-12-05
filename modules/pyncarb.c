@@ -22,6 +22,7 @@ along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
  * @author Daniel Michelson, Environment and Climate Change Canada
  * @date 2019-11-16
  */
+
 #include "pyncarb_compat.h"
 #include "arrayobject.h"
 #include "rave.h"
@@ -115,6 +116,11 @@ static struct PyMethodDef _ncarb_functions[] =
   { NULL, NULL }
 };
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /**
  * Initialize the _ncarb module
  */
@@ -142,5 +148,9 @@ MOD_INIT(_ncarb)
   PYRAVE_DEBUG_INITIALIZE;
   return MOD_INIT_SUCCESS(module);
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 /*@} End of Module setup */
