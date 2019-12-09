@@ -31,15 +31,25 @@ extern "C" {
 #include "rave_attribute.h"
 #include "polarscan.h"
 #include "polarscanparam.h"
+#include "rave_field.h"
 #include "rave_alloc.h"
+#define MY_MIN(a, b) ((a) < (b) ? (a) : (b))
 }
 #include "NcarParticleId.hh"
 
 #define PID_GAIN 1.0
+#define PID_INTEREST_GAIN 0.005
 #define PID_OFFSET 0.0
 #define PID_NODATA 255.0
 #define PID_UNDETECT 0.0
 #define RSCALE 100.0  /* meters */
+#define DR_OFFSET -33.13757158016619
+#define DR_GAIN 0.12995126109869093
+#define DR_UNDETECT DR_OFFSET
+#define DR_NODATA 0.0     /* bogus nodata depolarization value */
+#define MAX_RHOHV 0.999   /* RHOHV must be <1 to avoid blowing up DR */
+#define PARAM_HOW "us.ncar.pid"
+#define FIELD_HOW "us.ncar.pid.interest"
 
 /**
  * Read thresholds from file used to perform particle identification.
@@ -52,10 +62,12 @@ int readThresholdsFromFile(const char *thresholds_file);
  * For an input polar scan (or possibly RHI), perform particle classification
  * using the NCAR implementation of the NEXRAD classes.
  * @param[in] scan - input polar scan
+ * @param[in] int - median filter length to apply on PID, must be an odd value 
+ * or the filter will just return.  0 = no filter applied
  * @param[in] thresholds_file - string to file containing classification thresholds. Should only be read once as long as the software is initialized. This
  * argument is therefore a dummy and can be removed.
  * @returns 1 upon success, otherwise 0
  */
-int generateNcar_pid(PolarScan_t *scan, const char *thresholds_file);
-  
+int generateNcar_pid(PolarScan_t *scan, int median_filter_len);
+
 #endif

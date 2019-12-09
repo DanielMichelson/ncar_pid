@@ -29,18 +29,39 @@ import os
 import rave_defines
 import _ncarb
 import numpy as np
+from rave_defines import RAVECONFIG
 
-THRESHOLDS_FILE = 'pid_thresholds.nexrad'
-THRESHOLDS_PATH = os.path.join(rave_defines.RAVECONFIG, THRESHOLDS_FILE)
+THRESHOLDS_FILE = {"nexrad" : os.path.join(RAVECONFIG,"pid_thresholds.nexrad"),
+                   "nexrad.alt" : os.path.join(RAVECONFIG,
+                                               "pid_thresholds.nexrad.alt"),
+                   "cband" :os.path.join(RAVECONFIG,"pid_thresholds.cband.shv"),
+                   "sband" :os.path.join(RAVECONFIG,"pid_thresholds.sband.alt"),
+                   "xband" :os.path.join(RAVECONFIG,"pid_thresholds.xband.shv")}
 initialized = 0
 
-def init(fstr = THRESHOLDS_PATH):
+def init(fstr = THRESHOLDS_FILE["nexrad"]):
   global initialized
   if initialized: return
 
   _ncarb.readThresholdsFromFile(fstr)
 
   initialized = 1
+
+
+## Reads a height-temperature profile from ASCII file, where the first column
+#  is height (metres above sea level) and the second column is temperature in C.
+#  The profile should be ascending by height, such that the first row in the
+#  file is the lowest.
+# @param string input file string
+# @param boolean whether (True) to flip the profile vertically or not (False)
+# @param float scaling factor for height, in case heights are provided in e.g. km.
+# @return array of doubles in two dimensions (height, temperature)
+def readProfile(fstr, flip=False, scale_height=0.0):
+  profile = np.loadtxt(fstr, unpack=True, dtype='d')
+  profile = np.fliplr(profile)
+  if flip: profile = np.flipud(profile)
+  if scale_height: profile[0] *= scale_height
+  return profile
 
 
 ## Interpolates a vertical temperature profile to central beam heights given by
@@ -75,13 +96,18 @@ def getTempcProfile(scan, profile):
   return rtempc
 
 
-def pidScan(scan, profile, thresholds_file):
+def pidScan(scan, profile, median_filter_len=0, pid_thresholds=None):
   if not initialized:
-    init()
+    init(pid_thresholds)
+  if pid_thresholds: _ncarb.readThresholdsFromFile(pid_thresholds)
   rtempc = getTempcProfile(scan, profile)
   scan.addAttribute('how/tempc', rtempc)
-  _ncarb.generateNcar_pid(scan, thresholds_file)
+  _ncarb.generateNcar_pid(scan, median_filter_len)
 
+
+def ncar_PID(rio, profile, median_filter_len=0):
+  pass
+  
 
 if __name__ == '__main__':
   pass

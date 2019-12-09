@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+'''
+Copyright (C) 2019 The Crown (i.e. Her Majesty the Queen in Right of Canada)
+
+This file is an add-on to RAVE.
+
+RAVE is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+RAVE and this software are distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
+
+'''
+##
+#  NCAR Particle Identification with BALTRAD
+
+
+## 
+# @file
+# @author Daniel Michelson, Environment and Climate Change Canada
+# @date 2019-12-05
+
+import sys, os, errno
+import _raveio
+import ncarb
+
+
+## Derives Particle Identification.
+# @param object containing command-line arguments
+def main(options):
+    profile = ncarb.readProfile(options.pfile)
+    rio = _raveio.open(options.ifile)
+    ncarb.ncar_PID(rio.object, profile)
+    rio.save(options.ofile)
+
+
+if __name__=="__main__":
+    from optparse import OptionParser
+
+    description = "NCAR Particle Identification with BALTRAD"
+
+    usage = "usage: %prog -i <input file> -o <output file> -p <temperature profile file> [-d <derive depolarization ratio> -z <ZDR offset> -s <ZDR scale> -f <median filter on PID> -k <keep extra fields>] [h]"
+
+    parser = OptionParser(usage=usage, description=description)
+
+    parser.add_option("-i", "--infile", dest="ifile",
+                      help="Name of input file. Must contain a polar volume or scan.")
+
+    parser.add_option("-o", "--outfile", dest="ofile",
+                      help="Name of output file to write.")
+    
+    parser.add_option("-p", "--temp_profile", dest="pfile",
+                      help="Name of input temperature profile file (ASCII). Must contain two columns: height (m a s l) and temperature (C) in ascending order by height.")
+
+    parser.add_option("-t", "--pid_thresholds", dest="pid_thresholds",
+                      default=ncarb.THRESHOLDS_FILE["nexrad"]),
+                      help="PID thresholds look-up file to read. Defaults to
+                           nexrad.")
+
+    parser.add_option("-z", "--zdr_offset", dest="zdr_offset", type="float", 
+                      default=0.0,
+                      help="ZDR offset in dB. Defaults to 0.0")
+
+    parser.add_option("-s", "--zdr_scale", dest="zdr_scale", type="float", 
+                      default=0.0,
+                      help="ZDR scaling factor, to apply when deriving depolarization ratio. Defaults to 0.0")
+
+    parser.add_option("-d", "--derive_dr", dest="derive_dr", type="store_true", 
+                      help="Whether to derive depolarization ratio and use it as a proxy for LDR.")
+
+    parser.add_option("-f", "--median_filter_len", dest="median_filter_len",
+                      type="int", default=3,
+                      help="Median filter length on resulting PID. Defaults to 3")
+
+    parser.add_option("-k", "--keepExtras", dest="keepExtras",
+                      default="store_true",
+                      help="Keep and store the derived extra fields (SNRH, CLASS2). If depolarization ratio wasn't available beforehand, this option will keep it.")
+    
+    (options, args) = parser.parse_args()
+
+    if not options.ifile or not options.ofile or not options.pfile:
+        parser.print_help()
+        sys.exit()
+    
+    main(options)

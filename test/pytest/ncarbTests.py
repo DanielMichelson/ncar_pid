@@ -44,10 +44,6 @@ class ncarbTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_something(self):
-        pass
-#        self.assertAlmostEqual(result, reference, 2)
-
     def test_interpolateProfile(self):
         reference = np.array([15.,  17.5,  5.,  -2.5, -7.5])
         height = np.array([0.0, 100.0, 200.0, 300.0])
@@ -57,7 +53,7 @@ class ncarbTest(unittest.TestCase):
         self.assertEqual(out.all(), reference.all())
 
     def test_interpolateRealProfile(self):
-        profile = readProfile(self.PROFILE)
+        profile = ncarb.readProfile(self.PROFILE, scale_height=1000)
         reference = np.load(self.REF_TEMPC)
         scan = _raveio.open(self.FIXTURE).object
         rtempc = ncarb.getTempcProfile(scan, profile)
@@ -66,27 +62,14 @@ class ncarbTest(unittest.TestCase):
     def test_generateNcar_pid(self):
         rio = _raveio.open(self.FIXTURE)
         scan = rio.object
-        profile = readProfile(self.PROFILE)
-        ncarb.pidScan(scan, profile, self.THRESHOLDS)
+        profile = ncarb.readProfile(self.PROFILE, scale_height=1000)
+        ncarb.pidScan(scan, profile, median_filter_len=7,
+                      pid_thresholds=self.THRESHOLDS)
         rio.object = scan
-        rio.save(self.REF_FIXTURE)
-
-
-# Helper function to read temperature profile
-def readProfile(fstr):
-    h, t = [], []
-    fd = open(fstr)
-    lines = fd.readlines()
-    fd.close()
-    for line in lines:
-        l = line.split()
-        h.append(eval(l[0]))
-        t.append(eval(l[1]))
-    h.reverse()
-    t.reverse()
-    h = np.array(h) * 1000
-    t = np.array(t)
-    return np.array((h, t))
+        ref = _raveio.open(self.REF_FIXTURE).object
+        self.assertFalse(different(scan, ref))
+        self.assertFalse(different(scan, ref, "CLASS2"))
+        #rio.save(self.REF_FIXTURE)
 
 
 # Helper function to determine whether two parameter arrays differ

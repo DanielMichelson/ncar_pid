@@ -89,9 +89,9 @@ static PyObject* _readThresholdsFromFile_func(PyObject* self, PyObject* args) {
 static PyObject* _generateNcar_pid_func(PyObject* self, PyObject* args) {
   PyObject* object = NULL;
   PyPolarScan* pyscan = NULL;
-  const char *thresholds_file;
+  int median_filter_len;
 
-  if (!PyArg_ParseTuple(args, "Os", &object, &thresholds_file)) {
+  if (!PyArg_ParseTuple(args, "Oi", &object, &median_filter_len)) {
     return NULL;
   }
 
@@ -101,7 +101,7 @@ static PyObject* _generateNcar_pid_func(PyObject* self, PyObject* args) {
     raiseException_returnNULL(PyExc_AttributeError, "NCAR PID requires scan (in principle sweep or RHI) as input");
   }
 
-  if (!generateNcar_pid(pyscan->scan, thresholds_file)) {
+  if (!generateNcar_pid(pyscan->scan, median_filter_len)) {
     raiseException_returnNULL(PyExc_AttributeError, "Something went wrong");
   }
 
