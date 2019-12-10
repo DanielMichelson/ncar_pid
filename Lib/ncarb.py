@@ -127,7 +127,7 @@ def ncar_PID(rio, profile_fstr, median_filter_len=0, pid_thresholds=None,
     pidScan(pobject, profile, median_filter_len, pid_thresholds, keepExtras)
 
   else:
-    raise IOError, "Input object is neither polar volume nor scan"
+    raise IOError("Input object is neither polar volume nor scan")
   
 
 if __name__ == '__main__':
