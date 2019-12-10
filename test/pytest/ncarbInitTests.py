@@ -41,4 +41,5 @@ class ncarbInitTest(unittest.TestCase):
         _ncarb.readThresholdsFromFile(self.THRESHOLDS)
 
     def test_initThresholds(self):
-        ncarb.init(self.THRESHOLDS)
+        ncarb.THRESHOLDS_FILE['nexrad'] = self.THRESHOLDS
+        ncarb.init('nexrad')

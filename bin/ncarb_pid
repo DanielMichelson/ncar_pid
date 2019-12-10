@@ -35,9 +35,9 @@ import ncarb
 ## Derives Particle Identification.
 # @param object containing command-line arguments
 def main(options):
-    profile = ncarb.readProfile(options.pfile)
     rio = _raveio.open(options.ifile)
-    ncarb.ncar_PID(rio.object, profile)
+    ncarb.ncar_PID(rio, options.pfile, options.median_filter_len, 
+                   options.pid_thresholds, options.keepExtras)
     rio.save(options.ofile)
 
 
@@ -60,9 +60,8 @@ if __name__=="__main__":
                       help="Name of input temperature profile file (ASCII). Must contain two columns: height (m a s l) and temperature (C) in ascending order by height.")
 
     parser.add_option("-t", "--pid_thresholds", dest="pid_thresholds",
-                      default=ncarb.THRESHOLDS_FILE["nexrad"]),
-                      help="PID thresholds look-up file to read. Defaults to
-                           nexrad.")
+                      default="nexrad",
+                      help="PID thresholds look-up file to read. Defaults to 'nexrad'. All identifiers: %s" % ", ".join(ncarb.THRESHOLDS_FILE.keys()))
 
     parser.add_option("-z", "--zdr_offset", dest="zdr_offset", type="float", 
                       default=0.0,
@@ -70,9 +69,9 @@ if __name__=="__main__":
 
     parser.add_option("-s", "--zdr_scale", dest="zdr_scale", type="float", 
                       default=0.0,
-                      help="ZDR scaling factor, to apply when deriving depolarization ratio. Defaults to 0.0")
+                      help="ZDR scaling factor, to apply when deriving (modified) depolarization ratio. Defaults to 0.0")
 
-    parser.add_option("-d", "--derive_dr", dest="derive_dr", type="store_true", 
+    parser.add_option("-d", "--derive_dr", dest="derive_dr", action="store_true", 
                       help="Whether to derive depolarization ratio and use it as a proxy for LDR.")
 
     parser.add_option("-f", "--median_filter_len", dest="median_filter_len",
@@ -80,7 +79,7 @@ if __name__=="__main__":
                       help="Median filter length on resulting PID. Defaults to 3")
 
     parser.add_option("-k", "--keepExtras", dest="keepExtras",
-                      default="store_true",
+                      action="store_true",
                       help="Keep and store the derived extra fields (SNRH, CLASS2). If depolarization ratio wasn't available beforehand, this option will keep it.")
     
     (options, args) = parser.parse_args()

@@ -27,6 +27,7 @@ KDP derivation.
 '''
 import os
 import rave_defines
+import _polarvolume, _polarscan
 import _ncarb
 import numpy as np
 from rave_defines import RAVECONFIG
@@ -39,11 +40,11 @@ THRESHOLDS_FILE = {"nexrad" : os.path.join(RAVECONFIG,"pid_thresholds.nexrad"),
                    "xband" :os.path.join(RAVECONFIG,"pid_thresholds.xband.shv")}
 initialized = 0
 
-def init(fstr = THRESHOLDS_FILE["nexrad"]):
+def init(id = "nexrad"):
   global initialized
   if initialized: return
 
-  _ncarb.readThresholdsFromFile(fstr)
+  _ncarb.readThresholdsFromFile(THRESHOLDS_FILE[id])
 
   initialized = 1
 
@@ -96,17 +97,37 @@ def getTempcProfile(scan, profile):
   return rtempc
 
 
-def pidScan(scan, profile, median_filter_len=0, pid_thresholds=None):
+def pidScan(scan, profile, median_filter_len=0, pid_thresholds=None, 
+            keepExtras=False):
   if not initialized:
-    init(pid_thresholds)
-  if pid_thresholds: _ncarb.readThresholdsFromFile(pid_thresholds)
+    if pid_thresholds: init(pid_thresholds)
+    else: init()
+  if pid_thresholds: _ncarb.readThresholdsFromFile(THRESHOLDS_FILE[pid_thresholds])
   rtempc = getTempcProfile(scan, profile)
   scan.addAttribute('how/tempc', rtempc)
   _ncarb.generateNcar_pid(scan, median_filter_len)
 
+  if not keepExtras:
+    for param in ["SNRH", "CLASS2"]:
+      scan.removeParameter(param)
 
-def ncar_PID(rio, profile, median_filter_len=0):
-  pass
+
+def ncar_PID(rio, profile_fstr, median_filter_len=0, pid_thresholds=None, 
+             keepExtras=False):
+  profile = readProfile(profile_fstr, scale_height=1000.0)
+  pobject = rio.object
+
+  if _polarvolume.isPolarVolume(pobject):
+    nscans = pobject.getNumberOfScans(pobject)
+    for n in range(nscans):
+      scan = pobject.getScan(n)
+      pidScan(scan, profile, median_filter_len, pid_thresholds, keepExtras)
+
+  elif _polarscan.isPolarScan(pobject):
+    pidScan(pobject, profile, median_filter_len, pid_thresholds, keepExtras)
+
+  else:
+    raise IOError, "Input object is neither polar volume nor scan"
   
 
 if __name__ == '__main__':

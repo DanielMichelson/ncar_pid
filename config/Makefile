@@ -17,46 +17,21 @@
 # along with RAVE.  If not, see <http://www.gnu.org/licenses/>.
 # ------------------------------------------------------------------------
 # 
-# ncarb Makefile
+# For Lib directory, only install and clean functionality
 # @file
-# @author Daniel Michelson, Environment Canada and Climate Change Canada
-# @date 2019-11-14
+# @author Daniel Michelson, Environment and Climate Change Cananda
+# @date 2019-12-09
 ###########################################################################
-.PHONY: all src modules test doc install
+-include $(RAVEROOT)/rave/mkf/def.mk
 
-all:	src modules
-
-src:
-	$(MAKE) -C src
-
-modules:
-	$(MAKE) -C modules
-
-test:
-	@chmod +x ./tools/test_ncarb.sh
-	@./tools/test_ncarb.sh
-
-doc:
-	$(MAKE) -C doxygen doc
-
+.PHONY=install
 install:
-	$(MAKE) -C src install
-	$(MAKE) -C modules install
-	$(MAKE) -C Lib install
-	$(MAKE) -C bin install
-	$(MAKE) -C config install
-#	@sh etc/rave_pgf_quality_registry.sh
+	@cp -v -f pid_thresholds* "${prefix}/config/"
 
-.PHONY=clean
-clean:
-	$(MAKE) -C src clean
-	$(MAKE) -C modules clean
-	$(MAKE) -C Lib clean
-	$(MAKE) -C bin clean
-	$(MAKE) -C config clean
-	$(MAKE) -C doxygen clean
+.PHONY:clean
+clean: ;
+	@\rm -f *~
 
-.PHONY=distclean		 
-distclean:	clean
-	$(MAKE) -C src distclean
-	$(MAKE) -C modules distclean
+.PHONY:distclean
+distclean:
+	@\rm -f *~

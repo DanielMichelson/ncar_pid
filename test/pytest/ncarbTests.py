@@ -63,8 +63,9 @@ class ncarbTest(unittest.TestCase):
         rio = _raveio.open(self.FIXTURE)
         scan = rio.object
         profile = ncarb.readProfile(self.PROFILE, scale_height=1000)
+        ncarb.THRESHOLDS_FILE['nexrad'] = self.THRESHOLDS
         ncarb.pidScan(scan, profile, median_filter_len=7,
-                      pid_thresholds=self.THRESHOLDS)
+                      pid_thresholds='nexrad', keepExtras=True)
         rio.object = scan
         ref = _raveio.open(self.REF_FIXTURE).object
         self.assertFalse(different(scan, ref))
