@@ -37,7 +37,8 @@ import ncarb
 def main(options):
     rio = _raveio.open(options.ifile)
     ncarb.ncar_PID(rio, options.pfile, options.median_filter_len, 
-                   options.pid_thresholds, options.keepExtras)
+                   options.pid_thresholds, options.zdr_offset, 
+                   options.keepExtras)
     rio.save(options.ofile)
 
 

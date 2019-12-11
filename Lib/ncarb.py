@@ -98,14 +98,14 @@ def getTempcProfile(scan, profile):
 
 
 def pidScan(scan, profile, median_filter_len=0, pid_thresholds=None, 
-            keepExtras=False):
+            zdr_offset=0.0, keepExtras=False):
   if not initialized:
     if pid_thresholds: init(pid_thresholds)
     else: init()
   if pid_thresholds: _ncarb.readThresholdsFromFile(THRESHOLDS_FILE[pid_thresholds])
   rtempc = getTempcProfile(scan, profile)
   scan.addAttribute('how/tempc', rtempc)
-  _ncarb.generateNcar_pid(scan, median_filter_len)
+  _ncarb.generateNcar_pid(scan, median_filter_len, zdr_offset)
 
   if not keepExtras:
     for param in ["SNRH", "CLASS2"]:
@@ -113,7 +113,7 @@ def pidScan(scan, profile, median_filter_len=0, pid_thresholds=None,
 
 
 def ncar_PID(rio, profile_fstr, median_filter_len=0, pid_thresholds=None, 
-             keepExtras=False):
+             zdr_offset=0.0, keepExtras=False):
   profile = readProfile(profile_fstr, scale_height=1000.0)
   pobject = rio.object
 
@@ -121,10 +121,12 @@ def ncar_PID(rio, profile_fstr, median_filter_len=0, pid_thresholds=None,
     nscans = pobject.getNumberOfScans(pobject)
     for n in range(nscans):
       scan = pobject.getScan(n)
-      pidScan(scan, profile, median_filter_len, pid_thresholds, keepExtras)
+      pidScan(scan, profile, median_filter_len, pid_thresholds, zdr_offset, 
+              keepExtras)
 
   elif _polarscan.isPolarScan(pobject):
-    pidScan(pobject, profile, median_filter_len, pid_thresholds, keepExtras)
+    pidScan(pobject, profile, median_filter_len, pid_thresholds, zdr_offset, 
+            keepExtras)
 
   else:
     raise IOError("Input object is neither polar volume nor scan")

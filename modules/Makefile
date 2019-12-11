@@ -24,9 +24,8 @@
 ###########################################################################
 -include $(RAVEROOT)/rave/mkf/def.mk
 
-CFLAGS= $(CCSHARED) -std=c++11 $(OPTS) $(DEFS) $(RAVE_INCLUDE_FLAG) \
-	$(RAVE_INCLUDE_FLAG)/python \
-	-I. -I../src $(INCLUDE_PYTHON) \
+CFLAGS= $(CCSHARED) -std=c++11 $(OPTS) $(DEFS) -I../src $(INCLUDE_PYTHON) \
+	$(RAVE_INCLUDE_FLAG) $(RAVE_INCLUDE_FLAG)/python -I. \
 	-I$(HLHDF_INCLUDE_DIR) $(NUMPY_INCLUDE_DIR) \
 	$(ZLIB_INCDIR) $(HDF5_INCDIR) $(PROJ_INCLUDE_DIR)
 

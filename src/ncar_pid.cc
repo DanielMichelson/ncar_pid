@@ -116,9 +116,10 @@ double* emptyRay(int nbins) {
  * @param[in] scan - input polar scan
  * @param[in] string - the parameter's quantity identifier
  * @param[in] int - the index of the ray to extract
+ * @param[in] double - offset value to apply as a bias correction
  * @returns double* array
  */
-double* getRay(PolarScan_t *scan, const char* paramname, int ray) {
+double* getRay(PolarScan_t *scan, const char* paramname, int ray, double offset) {
   PolarScanParam_t *param = PolarScan_getParameter(scan, paramname);
   int nbins = (int)PolarScanParam_getNbins(param);
   int bin;
@@ -129,7 +130,7 @@ double* getRay(PolarScan_t *scan, const char* paramname, int ray) {
   for (bin = 0; bin < nbins; bin++) {
     vtype = PolarScanParam_getConvertedValue(param, bin, ray, &value);
     if (vtype == RaveValueType_DATA) {
-      RAY[bin] = value;
+      RAY[bin] = value - offset;
     } else {
       RAY[bin] = (double)missing;
     }
@@ -308,7 +309,7 @@ int readThresholdsFromFile(const char *thresholds_file) {
 }
 
 
-int generateNcar_pid(PolarScan_t *scan, int median_filter_len) {
+int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset) {
   int nrays, nbins, ray, bin;
   PolarScanParam_t *CLASS = NULL;
   PolarScanParam_t *CLASS2 = NULL;
@@ -350,14 +351,14 @@ int generateNcar_pid(PolarScan_t *scan, int median_filter_len) {
     /* Read out moments, convert to physical value, make sure they're doubles,
        for each moment set both nodata and undetect to "missing".
        Assumes CfR2 short names, which are the same as ODIM_H5 quantity names.*/
-    double *snr = getRay(scan, "SNRH", ray);
-    double *dbz = getRay(scan, "DBZH", ray);
-    double *zdr = getRay(scan, "ZDR", ray);
-    double *kdp = getRay(scan, "KDP", ray);
-    double *rhohv = getRay(scan, "RHOHV", ray);
-    double *phidp = getRay(scan, "PHIDP", ray);
+    double *snr = getRay(scan, "SNRH", ray, 0.0);
+    double *dbz = getRay(scan, "DBZH", ray, 0.0);
+    double *zdr = getRay(scan, "ZDR", ray, zdr_offset);
+    double *kdp = getRay(scan, "KDP", ray, 0.0);
+    double *rhohv = getRay(scan, "RHOHV", ray, 0.0);
+    double *phidp = getRay(scan, "PHIDP", ray, 0.0);
     //    double *ldr = getRay(scan, "DR", ray);
-    if (PolarScan_hasParameter(scan, "LDR")) ldr = getRay(scan, "LDR", ray);
+    if (PolarScan_hasParameter(scan, "LDR")) ldr = getRay(scan, "LDR", ray, 0.0);
 
     pid.computePidBeam(nbins,
 		       (const double*)snr,

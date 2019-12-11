@@ -64,10 +64,9 @@ int readThresholdsFromFile(const char *thresholds_file);
  * @param[in] scan - input polar scan
  * @param[in] int - median filter length to apply on PID, must be an odd value 
  * or the filter will just return.  0 = no filter applied
- * @param[in] thresholds_file - string to file containing classification thresholds. Should only be read once as long as the software is initialized. This
- * argument is therefore a dummy and can be removed.
+ * @param[in] double - zdr_offset to apply as a bias correction
  * @returns 1 upon success, otherwise 0
  */
-int generateNcar_pid(PolarScan_t *scan, int median_filter_len);
+int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset);
 
 #endif
