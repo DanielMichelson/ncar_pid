@@ -334,7 +334,7 @@ int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset
      proxy, or not. Generate it if it isn't there. Optionally, "bend" DR by 
      applying a scaling factor. */
   if (!PolarScan_hasParameter(scan, "LDR")) {
-    if (derive_dr) && (!PolarScan_hasParameter(scan, "DR")) {
+    if ( (derive_dr) && (!PolarScan_hasParameter(scan, "DR")) ) {
       createDR(scan, zdr_offset, zdr_scale);
     } else {
       ldr = emptyRay(nbins);
