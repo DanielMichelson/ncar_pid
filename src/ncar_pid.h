@@ -64,9 +64,10 @@ int readThresholdsFromFile(const char *thresholds_file);
  * @param[in] scan - input polar scan
  * @param[in] int - median filter length to apply on PID, must be an odd value 
  * or the filter will just return.  0 = no filter applied
- * @param[in] double - zdr_offset to apply as a bias correction
+ * @param[in] double - ZDR offset to apply as a bias correction
+ * @param[in] int - boolean whether to derive depolarization ratio (1) or not (0)
+ * @param[in] double - ZDR scaling factor to apply in the derivation of depolarization ratio
  * @returns 1 upon success, otherwise 0
  */
-int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset);
-
+int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset, int derive_dr, double zdr_scale);
 #endif

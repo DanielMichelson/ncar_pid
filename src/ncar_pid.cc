@@ -309,7 +309,7 @@ int readThresholdsFromFile(const char *thresholds_file) {
 }
 
 
-int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset) {
+int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset, int derive_dr, double zdr_scale) {
   int nrays, nbins, ray, bin;
   PolarScanParam_t *CLASS = NULL;
   PolarScanParam_t *CLASS2 = NULL;
@@ -324,14 +324,21 @@ int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset
   pid.setMissingDouble(missing);
   pid.setMinValidInterest(-10.0);  /* Is this reflectivity? */
   pid.setApplyMedianFilterToPid(median_filter_len);
+  pid.setReplaceMissingLdr();
   //  pid.readThresholdsFromFile(thresholds_file);
 
   nrays = (int)PolarScan_getNrays(scan);
   nbins = (int)PolarScan_getNbins(scan);
   
-  /* Just recycle empty LDR unless the moment actually exists */
-  if (!PolarScan_hasParameter(scan, "LDR")) ldr = emptyRay(nbins);
-  //  if (!PolarScan_hasParameter(scan, "LDR")) createDR(scan, (double)0.0);
+  /* Use LDR if available. Otherwise choose to use depolarization ratio as a 
+     proxy, or not. Optionally, "bend" DR by applying a scaling factor. */
+  if (!PolarScan_hasParameter(scan, "LDR")) {
+    if (derive_dr) {
+      createDR(scan, zdr_offset, zdr_scale);
+    } else {
+      ldr = emptyRay(nbins);
+    }
+  }
 
   if (!PolarScan_hasParameter(scan, "SNRH")) createSNR(scan);
 
@@ -347,7 +354,7 @@ int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset
   CONF2 = (RaveField_t*)PolarScanParam_getQualityField(CLASS2, 0);
   
   for (ray = 0; ray < nrays; ++ray) {
-
+ 
     /* Read out moments, convert to physical value, make sure they're doubles,
        for each moment set both nodata and undetect to "missing".
        Assumes CfR2 short names, which are the same as ODIM_H5 quantity names.*/
@@ -357,8 +364,11 @@ int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset
     double *kdp = getRay(scan, "KDP", ray, 0.0);
     double *rhohv = getRay(scan, "RHOHV", ray, 0.0);
     double *phidp = getRay(scan, "PHIDP", ray, 0.0);
-    //    double *ldr = getRay(scan, "DR", ray);
-    if (PolarScan_hasParameter(scan, "LDR")) ldr = getRay(scan, "LDR", ray, 0.0);
+    if (PolarScan_hasParameter(scan, "LDR")) {
+      ldr = getRay(scan, "LDR", ray, 0.0);
+    } else if (derive_dr) {
+      ldr = getRay(scan, "DR", ray, 0.0);
+    }
 
     pid.computePidBeam(nbins,
 		       (const double*)snr,
@@ -375,8 +385,9 @@ int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset
     RAVE_FREE(kdp);
     RAVE_FREE(rhohv);
     RAVE_FREE(phidp);
-    //    RAVE_FREE(ldr);
-    if (PolarScan_hasParameter(scan, "LDR")) RAVE_FREE(ldr);
+    if ( (PolarScan_hasParameter(scan, "LDR")) || (derive_dr) ) {
+      RAVE_FREE(ldr);
+    }
 
     /* copy the winner and runner-up pids and interests into our objects */
     for (bin = 0; bin < nbins; ++bin) {
@@ -416,6 +427,8 @@ int generateNcar_pid(PolarScan_t *scan, int median_filter_len, double zdr_offset
   RAVE_OBJECT_RELEASE(CLASS);
   RAVE_OBJECT_RELEASE(CLASS2);
   RAVE_OBJECT_RELEASE(tempc_attr);
-  RAVE_FREE(ldr);
+  if ( (!PolarScan_hasParameter(scan, "LDR")) && (!derive_dr) ) {
+    RAVE_FREE(ldr);
+  }
   return 1;
 }

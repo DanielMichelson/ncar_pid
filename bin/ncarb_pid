@@ -35,9 +35,12 @@ import ncarb
 ## Derives Particle Identification.
 # @param object containing command-line arguments
 def main(options):
+    if not options.derive_dr: options.derive_dr = 0
+    else: options.derive_dr = 1
     rio = _raveio.open(options.ifile)
     ncarb.ncar_PID(rio, options.pfile, options.median_filter_len, 
                    options.pid_thresholds, options.zdr_offset, 
+                   options.derive_dr, options.zdr_scale,
                    options.keepExtras)
     rio.save(options.ofile)
 
@@ -69,8 +72,8 @@ if __name__=="__main__":
                       help="ZDR offset in dB. Defaults to 0.0")
 
     parser.add_option("-s", "--zdr_scale", dest="zdr_scale", type="float", 
-                      default=0.0,
-                      help="ZDR scaling factor, to apply when deriving (modified) depolarization ratio. Defaults to 0.0")
+                      default=1.0,
+                      help="ZDR scaling factor, to apply when deriving (modified) depolarization ratio. Defaults to 1.0")
 
     parser.add_option("-d", "--derive_dr", dest="derive_dr", action="store_true", 
                       help="Whether to derive depolarization ratio and use it as a proxy for LDR.")

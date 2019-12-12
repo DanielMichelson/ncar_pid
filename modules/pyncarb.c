@@ -89,10 +89,10 @@ static PyObject* _readThresholdsFromFile_func(PyObject* self, PyObject* args) {
 static PyObject* _generateNcar_pid_func(PyObject* self, PyObject* args) {
   PyObject* object = NULL;
   PyPolarScan* pyscan = NULL;
-  int median_filter_len;
-  double zdr_offset;
+  int median_filter_len, derive_dr;
+  double zdr_offset, zdr_scale;
 
-  if (!PyArg_ParseTuple(args, "Oid", &object, &median_filter_len, &zdr_offset)) {
+  if (!PyArg_ParseTuple(args, "Oidid", &object, &median_filter_len, &zdr_offset, &derive_dr, &zdr_scale)) {
     return NULL;
   }
 
@@ -102,7 +102,7 @@ static PyObject* _generateNcar_pid_func(PyObject* self, PyObject* args) {
     raiseException_returnNULL(PyExc_AttributeError, "NCAR PID requires scan (in principle sweep or RHI) as input");
   }
 
-  if (!generateNcar_pid(pyscan->scan, median_filter_len, zdr_offset)) {
+  if (!generateNcar_pid(pyscan->scan, median_filter_len, zdr_offset, derive_dr, zdr_scale)) {
     raiseException_returnNULL(PyExc_AttributeError, "Something went wrong");
   }
 
