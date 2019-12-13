@@ -40,6 +40,10 @@ THRESHOLDS_FILE = {"nexrad" : os.path.join(RAVECONFIG,"pid_thresholds.nexrad"),
                    "xband" :os.path.join(RAVECONFIG,"pid_thresholds.xband.shv")}
 initialized = 0
 
+# Cannot proceed without these
+REQUIRED_PARAMETERS = ('DBZH', 'ZDR', 'KDP', 'RHOHV', 'PHIDP')
+
+
 def init(id = "nexrad"):
   global initialized
   if initialized: return
@@ -99,6 +103,8 @@ def getTempcProfile(scan, profile):
 
 def pidScan(scan, profile, median_filter_len=0, pid_thresholds=None, 
             zdr_offset=0.0, derive_dr=0, zdr_scale=1.0, keepExtras=False):
+  if not all(elem in scan.getParameterNames() for elem in REQUIRED_PARAMETERS):
+    raise NameError, "Missing one or more required parameters: %s" % ", ".join(REQUIRED_PARAMETERS)
   if not initialized:
     if pid_thresholds: init(pid_thresholds)
     else: init()
